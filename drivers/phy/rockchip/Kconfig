@@ -82,6 +82,14 @@ config PHY_ROCKCHIP_INNO_DSIDPHY
 	  Enable this to support the Rockchip MIPI/LVDS/TTL PHY with
 	  Innosilicon IP block.
 
+config PHY_ROCKCHIP_INNO_VIDEO_COMBO_PHY
+	tristate "Rockchip Innosilicon video combo PHY driver (legacy px30-video-phy binding)"
+	depends on (ARCH_ROCKCHIP || COMPILE_TEST) && OF
+	select GENERIC_PHY
+	help
+	  Legacy MIPI/LVDS/TTL PHY driver matching rockchip,px30-video-phy,
+	  used by device trees written for the 4.4 kernel.
+
 config PHY_ROCKCHIP_MIPI_RX
 	tristate "Rockchip MIPI RX D-PHY Driver"
 	depends on VIDEO_V4L2 && VIDEO_V4L2_SUBDEV_API
