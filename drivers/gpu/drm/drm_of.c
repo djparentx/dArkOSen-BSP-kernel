@@ -219,6 +219,33 @@ int drm_of_encoder_active_endpoint(struct device_node *node,
 }
 EXPORT_SYMBOL_GPL(drm_of_encoder_active_endpoint);
 
+static int drm_of_find_child_panel(const struct device_node *np,
+				   struct drm_panel **panel)
+{
+	struct device_node *child;
+	int ret = -ENODEV;
+
+	if (!panel)
+		return -ENODEV;
+
+	for_each_available_child_of_node(np, child) {
+		if (!of_find_property(child, "reg", NULL))
+			continue;
+
+		*panel = of_drm_find_panel(child);
+		if (IS_ERR(*panel)) {
+			*panel = NULL;
+			ret = -EPROBE_DEFER;
+		} else {
+			ret = 0;
+		}
+		of_node_put(child);
+		break;
+	}
+
+	return ret;
+}
+
 /**
  * drm_of_find_panel_or_bridge - return connected panel or bridge device
  * @np: device tree node containing encoder output ports
@@ -253,11 +280,11 @@ int drm_of_find_panel_or_bridge(const struct device_node *np,
 	 * device-tree node.
 	 */
 	if (!of_graph_is_present(np))
-		return -ENODEV;
+		return drm_of_find_child_panel(np, panel);
 
 	remote = of_graph_get_remote_node(np, port, endpoint);
 	if (!remote)
-		return -ENODEV;
+		return drm_of_find_child_panel(np, panel);
 
 	if (panel) {
 		*panel = of_drm_find_panel(remote);

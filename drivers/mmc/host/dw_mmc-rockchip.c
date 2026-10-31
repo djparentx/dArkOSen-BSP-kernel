@@ -8,6 +8,7 @@
 #include <linux/clk.h>
 #include <linux/mmc/host.h>
 #include <linux/of_address.h>
+#include <linux/of_platform.h>
 #include <linux/mmc/slot-gpio.h>
 #include <linux/pm_runtime.h>
 #include <linux/rockchip/cpu.h>
@@ -606,9 +607,27 @@ static int dw_mci_rockchip_probe(struct platform_device *pdev)
 	const struct of_device_id *match;
 	int ret;
 	bool use_rpm = true;
+	struct device_node *iod_np;
 
 	if (!pdev->dev.of_node)
 		return -ENODEV;
+
+	iod_np = of_find_compatible_node(NULL, NULL,
+					 "rockchip,px30-io-voltage-domain");
+	if (iod_np) {
+		struct platform_device *iod;
+		bool ready = true;
+
+		if (of_device_is_available(iod_np)) {
+			iod = of_find_device_by_node(iod_np);
+			ready = iod && device_is_bound(&iod->dev);
+			if (iod)
+				put_device(&iod->dev);
+		}
+		of_node_put(iod_np);
+		if (!ready)
+			return -EPROBE_DEFER;
+	}
 
 	if ((!device_property_read_bool(&pdev->dev, "non-removable") &&
 	     !device_property_read_bool(&pdev->dev, "cd-gpios")) ||
