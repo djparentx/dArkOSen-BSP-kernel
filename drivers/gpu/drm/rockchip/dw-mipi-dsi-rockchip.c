@@ -1172,6 +1172,8 @@ static int dw_mipi_dsi_rockchip_probe(struct platform_device *pdev)
 
 	/* try to get a possible external dphy */
 	dsi->phy = devm_phy_optional_get(dev, "dphy");
+	if (!dsi->phy)
+		dsi->phy = devm_phy_optional_get(dev, "mipi_dphy");
 	if (IS_ERR(dsi->phy)) {
 		ret = PTR_ERR(dsi->phy);
 		DRM_DEV_ERROR(dev, "failed to get mipi dphy: %d\n", ret);

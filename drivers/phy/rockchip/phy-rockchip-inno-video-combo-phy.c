@@ -590,8 +590,12 @@ static int inno_video_phy_set_mode(struct phy *phy, enum phy_mode mode,
 	return 0;
 }
 
+static int inno_video_phy_configure(struct phy *phy,
+				    union phy_configure_opts *opts);
+
 static const struct phy_ops inno_video_phy_ops = {
 	.set_mode = inno_video_phy_set_mode,
+	.configure = inno_video_phy_configure,
 	.power_on = inno_video_phy_power_on,
 	.power_off = inno_video_phy_power_off,
 	.owner = THIS_MODULE,
@@ -665,6 +669,32 @@ static unsigned long inno_video_phy_pll_round_rate(struct inno_video_phy *inno,
 	}
 
 	return best_freq;
+}
+
+static int inno_video_phy_configure(struct phy *phy,
+				    union phy_configure_opts *opts)
+{
+	struct inno_video_phy *inno = phy_get_drvdata(phy);
+	unsigned long fin, fout;
+	u16 fbdiv = 1;
+	u8 prediv = 1;
+
+	if (phy_get_mode(phy) != PHY_MODE_MIPI_DPHY)
+		return 0;
+
+	fin = clk_get_rate(inno->ref_clk);
+	fout = inno_video_phy_pll_round_rate(inno, fin,
+					     opts->mipi_dphy.hs_clk_rate,
+					     &prediv, &fbdiv);
+	if (!fout)
+		return -EINVAL;
+
+	inno->pll.prediv = prediv;
+	inno->pll.fbdiv = fbdiv;
+	inno->pll.rate = fout;
+	opts->mipi_dphy.hs_clk_rate = fout;
+
+	return 0;
 }
 
 static long inno_video_phy_pll_clk_round_rate(struct clk_hw *hw,
