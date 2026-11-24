@@ -1,4 +1,4 @@
-name: Build dArkOSen 5.10 kernel
+name: Build DavOS 5.10 kernel
 
 on:
   push:
@@ -10,7 +10,7 @@ env:
   ARCH: arm64
   CROSS_COMPILE: aarch64-linux-gnu-
   KBUILD_BUILD_USER: djpar
-  KBUILD_BUILD_HOST: dArkOSen
+  KBUILD_BUILD_HOST: DavOS
   CCACHE_DIR: ${{ github.workspace }}/.ccache
 
 jobs:
@@ -103,5 +103,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: darkosen-kernel-${{ env.KREL }}
+          name: DavOS-kernel-${{ env.KREL }}
           path: dist/
