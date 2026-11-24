@@ -3,7 +3,7 @@ name: Build DavOS 5.10 kernel
 on:
   push:
     branches:
-      - darkosen-5.10
+      - DavOS-5.10
   workflow_dispatch:
 
 env:
